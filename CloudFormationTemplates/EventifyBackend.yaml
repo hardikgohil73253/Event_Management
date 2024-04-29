@@ -1,0 +1,1997 @@
+############################################################################################################
+# Group 34 - CloudClan                                                                                     #
+# Resource creation:                                                                                       #
+# - cognito user pool                                                                                      #
+# - cognito app client                                                                                     #
+# - API gateway (resources and differenet methods)                                                         # 
+# - lambda functions (four)                                                                                #
+#                                                                                                          #
+# References used:                                                                                         #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpool.html        #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolclient.html  #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html      #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-resource.html     #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html       #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html         #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-permission.html       #
+#                                                                                                          #
+#                                                                                                          #
+############################################################################################################
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+  CognitoName:
+    Type: String
+    Default: cognitotestcf
+  ApplicationBaseName: 
+    Type: String
+    Default: test
+
+Resources:
+  MyPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: !Ref CognitoName
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - Name: sub
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: false
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "2048"
+        - Name: name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: given_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: family_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: middle_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: nickname
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: preferred_username
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: profile
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: picture
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: website
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: email
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: email_verified
+          AttributeDataType: Boolean
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+        - Name: gender
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: birthdate
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "10"
+            MaxLength: "10"
+        - Name: zoneinfo
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: locale
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: phone_number
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: address
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - Name: updated_at
+          AttributeDataType: Number
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          NumberAttributeConstraints:
+            MinValue: "0"
+        - Name: firstname
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "256"
+        - Name: lastname
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "256"
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      SmsVerificationMessage: 'Your verification code is {####}. '
+      EmailVerificationMessage: "Welcome to Eventify,\n\nYour verification code is {####}. "
+      EmailVerificationSubject: Eventify  - Your verification code
+      VerificationMessageTemplate:
+        SmsMessage: 'Your verification code is {####}. '
+        EmailMessage: "Welcome to Eventify,\n\nYour verification code is {####}. "
+        EmailSubject: Eventify  - Your verification code
+        DefaultEmailOption: CONFIRM_WITH_CODE
+      SmsAuthenticationMessage: 'Your authentication code is {####}. '
+      MfaConfiguration: 'OFF'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      UserPoolTags:
+        Name: !Ref CognitoName
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      UsernameConfiguration:
+        CaseSensitive: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+        - Priority: 1
+          Name: verified_email
+
+  UserPoolAppClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: !Join ["-", [!Ref CognitoName, "app-client"]]
+      GenerateSecret: false
+      UserPoolId: !Ref MyPool
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+      AllowedOAuthFlowsUserPoolClient: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+
+
+  CognitoRegisterLoginEventify:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Join ["", [!Ref ApplicationBaseName, "Cognito"]]
+      CodeUri: s3://eventify-lambda-code-bucket/CognitoCode.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.9
+      Description: ''
+      MemorySize: 128
+      Timeout: 3
+      Role: >-
+        arn:aws:iam::359996502019:role/service-role/CognitoRegisterLoginTest-role-4m9235hd
+      Environment:
+        Variables:
+          COGNITO_REGION_NAME: us-east-1
+          COGNITO_USER_CLIENT_ID: !Ref UserPoolAppClient
+
+  OrganizerEventify:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Join ["", [!Ref ApplicationBaseName, "Organizer"]]
+      CodeUri: s3://eventify-lambda-code-bucket/OrganizerCode.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.9
+      Description: ''
+      MemorySize: 128
+      Timeout: 15
+      Role: >-
+        arn:aws:iam::359996502019:role/service-role/OrganizerEventifyLambda-role-1krqekmu
+      Environment:
+        Variables:
+          COGNITO_REGION_NAME: us-east-1
+          COGNITO_USER_POOL_ID: !Ref MyPool
+
+  AdminEventify:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Join ["", [!Ref ApplicationBaseName, "Admin"]]
+      CodeUri: s3://eventify-lambda-code-bucket/AdminCode.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.9
+      Description: ''
+      MemorySize: 128
+      Timeout: 3
+      Role: >-
+        arn:aws:iam::359996502019:role/service-role/AdminEventifyLambda-role-rr4udrii
+
+  AttendeeEventify:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Join ["", [!Ref ApplicationBaseName, "Attendee"]]
+      CodeUri: s3://eventify-lambda-code-bucket/AttendeeCode.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.9
+      Description: ''
+      MemorySize: 128
+      Timeout: 3
+      Role: >-
+        arn:aws:iam::359996502019:role/service-role/AttendeeEventifyLambda-role-ync22mrl
+
+  EventifyApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: Event API
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Description: API used for Event requests
+      FailOnWarnings: true
+
+  LambdaPermissionCognito:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:invokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - CognitoRegisterLoginEventify
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Join':
+          - ''
+          - - 'arn:aws:execute-api:'
+            - Ref: 'AWS::Region'
+            - ':'
+            - Ref: 'AWS::AccountId'
+            - ':'
+            - Ref: EventifyApi
+            - /*
+  
+  LambdaPermissionOrganizer:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:invokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - OrganizerEventify
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Join':
+          - ''
+          - - 'arn:aws:execute-api:'
+            - Ref: 'AWS::Region'
+            - ':'
+            - Ref: 'AWS::AccountId'
+            - ':'
+            - Ref: EventifyApi
+            - /*
+
+  LambdaPermissionAdmin:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:invokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - AdminEventify
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Join':
+          - ''
+          - - 'arn:aws:execute-api:'
+            - Ref: 'AWS::Region'
+            - ':'
+            - Ref: 'AWS::AccountId'
+            - ':'
+            - Ref: EventifyApi
+            - /*
+
+  LambdaPermissionAttendee:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:invokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - AttendeeEventify
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Join':
+          - ''
+          - - 'arn:aws:execute-api:'
+            - Ref: 'AWS::Region'
+            - ':'
+            - Ref: 'AWS::AccountId'
+            - ':'
+            - Ref: EventifyApi
+            - /*
+
+
+  EventifyApiStage:
+    Type: 'AWS::ApiGateway::Stage'
+    DependsOn:
+      - ApiDeployment
+    Properties:
+      DeploymentId:
+        Ref: ApiDeployment
+      RestApiId:
+        Ref: EventifyApi
+      StageName: prod
+  ApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - EventRegisterOption
+      - EventRegisterPost
+      - EventConfirmRegisterOption
+      - EventConfirmRegisterPost
+      - EventLoginOption
+      - EventLoginPost
+      - EventCreateEventOption
+      - EventCreateEventPost
+      - EventGetorganizerEventOption
+      - EventGetorganizerEventGet
+      - EventGetPartcipantsOption
+      - EventGetPartcipantsGet
+      - EventDeleteEventOption
+      - EventDeleteEventPost
+      - EventAdminGetEventsOption
+      - EventAdminGetEventsGet
+      - EventAdminApproveEventOption
+      - EventAdminApproveEventGet
+      - EventAdminRejectEventGet
+      - EventAdminRejectEventOption
+      - EventBookEventOption
+      - EventBookEventPost
+      - EventGetApprovedEventOption
+      - EventGetApprovedEventGet
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+
+  EventRegisterResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: register
+  
+  EventRegisterOption:
+    DependsOn: LambdaPermissionCognito
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventRegisterResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventRegisterPost:
+    DependsOn: LambdaPermissionCognito
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventRegisterResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - CognitoRegisterLoginEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventConfirmRegisterResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: confirmregister 
+
+  EventConfirmRegisterOption:
+    DependsOn: LambdaPermissionCognito
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventConfirmRegisterResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventConfirmRegisterPost:
+    DependsOn: LambdaPermissionCognito
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventConfirmRegisterResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - CognitoRegisterLoginEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false   
+  
+  EventLoginResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: login 
+
+  EventLoginOption:
+    DependsOn: LambdaPermissionCognito
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventLoginResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventLoginPost:
+    DependsOn: LambdaPermissionCognito
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventLoginResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - CognitoRegisterLoginEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false   
+
+  EventCreateEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: create-event 
+
+  EventCreateEventOption:
+    DependsOn: LambdaPermissionOrganizer
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventCreateEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventCreateEventPost:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventCreateEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - OrganizerEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventGetorganizerEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: get-organizer-event 
+
+  EventGetorganizerEventOption:
+    DependsOn: LambdaPermissionOrganizer
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventGetorganizerEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventGetorganizerEventGet:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventGetorganizerEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - OrganizerEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      RequestParameters:
+         "method.request.querystring.organizer_email": false
+  
+  EventGetPartcipantsResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: get-participants 
+
+  EventGetPartcipantsOption:
+    DependsOn: LambdaPermissionOrganizer
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventGetPartcipantsResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventGetPartcipantsGet:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventGetPartcipantsResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - OrganizerEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      RequestParameters:
+         "method.request.querystring.event_id": false
+  
+  EventDeleteEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: delete-event 
+
+  EventDeleteEventOption:
+    DependsOn: LambdaPermissionOrganizer
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventDeleteEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventDeleteEventPost:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventDeleteEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - OrganizerEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      
+  
+  EventAdminGetEventsResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: admin-get-events 
+
+  EventAdminGetEventsOption:
+    DependsOn: LambdaPermissionAdmin
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventAdminGetEventsResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventAdminGetEventsGet:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventAdminGetEventsResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - AdminEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      
+  EventAdminApproveEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: admin-event-approve
+
+  EventAdminApproveEventOption:
+    DependsOn: LambdaPermissionAdmin
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventAdminApproveEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventAdminApproveEventGet:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventAdminApproveEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - AdminEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      RequestParameters:
+        "method.request.querystring.event_id": false
+  
+  EventAdminRejectEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: admin-event-reject
+
+  EventAdminRejectEventOption:
+    DependsOn: LambdaPermissionAdmin
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventAdminRejectEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventAdminRejectEventGet:
+    DependsOn: LambdaPermissionOrganizer
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventAdminRejectEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - AdminEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      RequestParameters:
+        "method.request.querystring.event_id": false
+
+  EventGetApprovedEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: get-approved-event
+
+  EventGetApprovedEventOption:
+    DependsOn: LambdaPermissionAttendee
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventGetApprovedEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventGetApprovedEventGet:
+    DependsOn: LambdaPermissionAttendee
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId:
+        Ref: EventGetApprovedEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - AttendeeEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+      
+  EventBookEventResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId:
+        Ref: EventifyApi
+      ParentId:
+        'Fn::GetAtt':
+          - EventifyApi
+          - RootResourceId
+      PathPart: book-event
+
+  EventBookEventOption:
+    DependsOn: LambdaPermissionAttendee
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: EventifyApi
+      ResourceId:
+        Ref: EventBookEventResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS'"
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+  EventBookEventPost:
+    DependsOn: LambdaPermissionAttendee
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId:
+        Ref: EventBookEventResource
+      RestApiId:
+        Ref: EventifyApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        Uri:
+          'Fn::Join':
+            - ''
+            - - 'arn:aws:apigateway:'
+              - Ref: 'AWS::Region'
+              - ':lambda:path/2015-03-31/functions/'
+              - 'Fn::GetAtt':
+                  - AttendeeEventify
+                  - Arn
+              - /invocations
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Methods": "'GET'"
+            "method.response.header.Access-Control-Allow-Origin" : "'*'"
+        
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '#set($allParams = $input.params())
+                    {
+                    "body-json" : $input.json("$"),
+                    "params" : {
+                    #foreach($type in $allParams.keySet())
+                        #set($params = $allParams.get($type))
+                    "$type" : {
+                        #foreach($paramName in $params.keySet())
+                        "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                            #if($foreach.hasNext),#end
+                        #end
+                    }
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "stage-variables" : {
+                    #foreach($key in $stageVariables.keySet())
+                    "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                        #if($foreach.hasNext),#end
+                    #end
+                    },
+                    "context" : {
+                        "account-id" : "$context.identity.accountId",
+                        "api-id" : "$context.apiId",
+                        "api-key" : "$context.identity.apiKey",
+                        "authorizer-principal-id" : "$context.authorizer.principalId",
+                        "caller" : "$context.identity.caller",
+                        "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                        "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                        "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                        "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                        "http-method" : "$context.httpMethod",
+                        "stage" : "$context.stage",
+                        "source-ip" : "$context.identity.sourceIp",
+                        "user" : "$context.identity.user",
+                        "user-agent" : "$context.identity.userAgent",
+                        "user-arn" : "$context.identity.userArn",
+                        "request-id" : "$context.requestId",
+                        "resource-id" : "$context.resourceId",
+                        "resource-path" : "$context.resourcePath"
+                        }
+                    }'
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            "method.response.header.Access-Control-Allow-Headers": false
+            "method.response.header.Access-Control-Allow-Methods": false
+            "method.response.header.Access-Control-Allow-Origin": false
+
+
+Outputs:
+  CognitoUserPool:
+    Description: User Pool
+    Value: !Ref MyPool
+  CognitoUserPoolAppClient:
+    Description: User App Client
+    Value: !Ref UserPoolAppClient
+  ProdDataEndpoint:
+    Description: "API Prod stage endpoint"
+    Value: !Sub "https://${EventifyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+      
+  

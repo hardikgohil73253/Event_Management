@@ -1,0 +1,248 @@
+############################################################################################################
+# Group 34 - CloudClan                                                                                     #
+# Resource creation:                                                                                       #
+# - VPC                                                                                                    #
+# - Two private subnets and Two public subnets                                                             #
+# - Elastic IP                                                                                             # 
+# - Nat gateway                                                                                            #
+# - ElasticBeasnstalk Application                                                                          #
+# - ElasticBeasnstalk Environment                                                                          #
+# - Application load balancer in ElasticBeasnstalk Environment                                             #
+# - Auto-scaling in ElasticBeasnstalk Environment                                                          #
+#                                                                                                          #
+# References used:                                                                                         #
+# https://docs.aws.amazon.com/codebuild/latest/userguide/cloudformation-vpc-template.html                  #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpc.html                 #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-beanstalk-environment.html #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-elasticbeanstalk.html            #
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-beanstalk-environment.html #                                                                                                         #
+#                                                                                                          #
+############################################################################################################
+
+Parameters:
+  VPCName: 
+    Type: String
+    Default: Eventify
+  ElasticBeanstalkAppName:
+    Type: String
+    Default: production
+  EC2InstanceType: 
+    Type: String
+    Default: t2.micro
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Ref VPCName
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Join [ "", [ !Ref 'AWS::Region', "a" ] ]
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref VPCName, "Public-1"]]
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Join [ "", [ !Ref 'AWS::Region', "b" ] ]
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref VPCName, "Public-2"]]
+  PrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Join [ "", [ !Ref 'AWS::Region', "a" ] ]
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref VPCName, "Private-1"]]
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Join [ "", [ !Ref 'AWS::Region', "b" ] ]
+      CidrBlock: 10.0.3.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref VPCName, "Private-2"]]
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref VPCName, "InternetGateway"]]
+  InternetGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnet1RouteTable:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+  PublicSubnet2RouteTable:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+  NatGateway:
+    Type: "AWS::EC2::NatGateway"
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      AllocationId:
+         Fn::GetAtt:
+         - NatPublicIP
+         - AllocationId
+      SubnetId: !Ref PublicSubnet1
+  NatPublicIP:
+    Type: "AWS::EC2::EIP"
+    DependsOn: VPC
+    Properties:
+      Domain: vpc
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  PrivateRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+  PrivateSubnet1RouteTable:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+  PrivateSubnet2RouteTable:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+  
+  Application:
+    Type: "AWS::ElasticBeanstalk::Application"
+    Properties:
+      ApplicationName: !Ref ElasticBeanstalkAppName
+      Description: Eventify ElasticBeanstalk Application
+      
+  ApplicationVersion:
+    Type: "AWS::ElasticBeanstalk::ApplicationVersion"
+    Properties:
+      ApplicationName: !Ref Application
+      Description: String
+      SourceBundle:
+        S3Bucket: eventify-frontend
+        S3Key: eventify_server.zip
+        
+  ElasticBeanstalkEnvironment:
+    Type: "AWS::ElasticBeanstalk::Environment"
+    Properties:
+      EnvironmentName: !Join ["-", [!Ref ElasticBeanstalkAppName, "PROD"]]
+      ApplicationName: !Ref Application
+      SolutionStackName: "64bit Amazon Linux 2 v3.4.13 running Docker"
+      Tier:
+        Name: WebServer
+        Type: Standard
+        Version: "1.0"
+      VersionLabel: !Ref ApplicationVersion
+      OptionSettings:      
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
+          Value: aws-elasticbeanstalk-ec2-role
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: LoadBalanced     
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: 1
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: 2
+        - Namespace: aws:autoscaling:trigger
+          OptionName: MeasureName
+          Value: CPUUtilization
+        - Namespace: aws:autoscaling:trigger
+          OptionName: Unit
+          Value: Percent
+        - Namespace: aws:autoscaling:trigger
+          OptionName: UpperThreshold
+          Value: '80'
+        - Namespace: aws:autoscaling:trigger
+          OptionName: LowerThreshold
+          Value: '20'
+        - Namespace: aws:ec2:vpc
+          OptionName: ELBSubnets
+          Value: !Join
+            - ','
+            - - !Ref PublicSubnet1
+              - !Ref PublicSubnet2
+        - Namespace: aws:ec2:vpc
+          OptionName: Subnets
+          Value: !Join
+            - ','
+            - - !Ref PrivateSubnet1
+              - !Ref PrivateSubnet2
+        - Namespace: aws:ec2:vpc
+          OptionName: VPCId
+          Value: !Ref VPC
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: LoadBalancerType
+          Value: application
+        - Namespace: aws:elbv2:listener:default
+          OptionName: ListenerEnabled
+          Value: true
+        - Namespace: aws:elasticbeanstalk:environment:process:http
+          OptionName: Port
+          Value: 80
+        - Namespace: aws:elasticbeanstalk:environment:process:http
+          OptionName: Protocol
+          Value: HTTP
+
+      
+Outputs:
+  VPCID:
+    Description: VPC ID
+    Value: !Ref "VPC"
+  PublicSubnet1ID:
+    Description: Public Subnet 1 ID
+    Value: !Ref "PublicSubnet1"
+  PublicSubnet2ID:
+    Description: Public Subnet 2 ID
+    Value: !Ref "PublicSubnet2"
+  PrivateSubnet1ID:
+    Description: Private Subnet 1 ID
+    Value: !Ref "PrivateSubnet1"
+  PrivateSubnet2ID:
+    Description: Private Subnet 2 ID
+    Value: !Ref "PrivateSubnet2"
+  PublicAlbDnsName:
+    Description: ElasticBeanstalk APP URL
+    Value: !GetAtt 'ElasticBeanstalkEnvironment.EndpointURL'
+
+
